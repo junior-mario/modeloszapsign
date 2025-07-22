@@ -1,0 +1,20 @@
+[
+    {
+        "name": "nome",
+        "type": "texto",
+        "x": "100.83",
+        "y": "594.15"
+    },
+    {
+        "name": "data_nascimento",
+        "type": "texto",
+        "x": "100.83",
+        "y": "550.25"
+    },
+    {
+        "name": "assinatura",
+        "type": "assinatura",
+        "x": "76.66",
+        "y": "134.19"
+    }
+]

@@ -1,0 +1,123 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestor de Templates PDF</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 font-sans">
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
+        
+        <header class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-800">Gestor de Templates PDF</h1>
+            <p class="text-gray-600">Crie, gira e utilize os seus templates para preencher documentos PDF automaticamente.</p>
+        </header>
+
+        <!-- Botão para o Construtor de Formulários -->
+        <div class="mb-8">
+            <a href="{{ url_for('form_builder') }}" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 transition-transform hover:scale-105">
+                <i class="fas fa-plus-circle mr-3"></i>
+                Criar Novo Formulário HTML
+            </a>
+        </div>
+
+        <!-- Seção de Upload -->
+        <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+            <h2 class="text-xl font-semibold mb-4 text-gray-700">Adicionar Novo Template</h2>
+            {% with messages = get_flashed_messages() %}
+              {% if messages %}
+                <div class="mb-4">
+                  {% for message in messages %}
+                    <div class="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4" role="alert"><p>{{ message }}</p></div>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            {% endwith %}
+            <form action="{{ url_for('upload_file') }}" method="post" enctype="multipart/form-data" class="flex flex-col sm:flex-row sm:items-end sm:space-x-4 space-y-4 sm:space-y-0">
+                <div class="flex-grow">
+                    <label for="file" class="block text-sm font-medium text-gray-700">Selecione o ficheiro PDF:</label>
+                    <input type="file" name="file" id="file" required class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition-colors">
+                </div>
+                <button type="submit" class="w-full sm:w-auto flex items-center justify-center px-6 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-transform hover:scale-105">
+                    <i class="fas fa-upload mr-2"></i> Enviar e Configurar
+                </button>
+            </form>
+        </div>
+
+        <!-- Formulários Públicos Criados -->
+        <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+            <h2 class="text-xl font-semibold mb-4 text-gray-700">Formulários Públicos</h2>
+            <div class="space-y-4">
+                {% if forms %}
+                    {% for form in forms %}
+                    <div class="flex flex-col sm:flex-row items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+                        <div class="mb-4 sm:mb-0 text-center sm:text-left">
+                            <i class="fas fa-link text-indigo-500 mr-3"></i>
+                            <span class="font-medium text-gray-800">{{ form.name }}</span>
+                        </div>
+                        <div class="flex items-center space-x-2 flex-wrap justify-center">
+                            <a href="{{ url_for('serve_public_form', form_html_file=form.filename) }}" target="_blank" class="flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors mb-2 sm:mb-0">
+                                <i class="fas fa-eye mr-2"></i> Visualizar
+                            </a>
+                            <button onclick="copyLink('{{ url_for('serve_public_form', form_html_file=form.filename, _external=True) }}', this)" class="flex items-center px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 transition-colors mb-2 sm:mb-0">
+                                <i class="fas fa-copy mr-2"></i> <span class="btn-text">Copiar Link</span>
+                            </button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-center text-gray-500 py-4">Nenhum formulário público foi criado ainda.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Lista de Templates JSON (Base) -->
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-xl font-semibold mb-4 text-gray-700">Templates Base (JSON)</h2>
+            <div class="space-y-4">
+                {% if templates %}
+                    {% for t in templates %}
+                    <div class="flex flex-col sm:flex-row items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+                        <div class="mb-4 sm:mb-0 text-center sm:text-left">
+                            <i class="fas fa-file-code text-yellow-500 mr-3"></i>
+                            <span class="font-medium text-gray-800">{{ t.name }}</span>
+                        </div>
+                        <div class="flex items-center space-x-2 flex-wrap justify-center">
+                            <a href="{{ url_for('setup_template', filename=t.pdf_filename) }}" class="flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors mb-2 sm:mb-0">
+                                <i class="fas fa-edit mr-2"></i> Editar
+                            </a>
+                            <form action="{{ url_for('delete_template', pdf_name=t.name) }}" method="post" onsubmit="return confirm('Tem a certeza que deseja excluir o template {{ t.name }}? Esta ação não pode ser desfeita.');" class="mb-2 sm:mb-0">
+                                <button type="submit" class="flex items-center px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 transition-colors">
+                                    <i class="fas fa-trash-alt mr-2"></i> Excluir
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-center text-gray-500 py-4">Nenhum template encontrado. Envie um PDF para começar.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+<script>
+    function copyLink(link, buttonElement) {
+        navigator.clipboard.writeText(link).then(() => {
+            const textSpan = buttonElement.querySelector('.btn-text');
+            if (textSpan) {
+                textSpan.textContent = 'Copiado!';
+                setTimeout(() => {
+                    textSpan.textContent = 'Copiar Link';
+                }, 2000);
+            }
+        }).catch(err => {
+            console.error('Erro ao copiar link: ', err);
+            alert('Falha ao copiar o link.');
+        });
+    }
+</script>
+</body>
+</html>

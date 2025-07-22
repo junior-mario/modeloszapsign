@@ -1,0 +1,40 @@
+<!-- templates/form.html -->
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preencher {{ pdf_name }}</title>
+    <link href="https://cdn.tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-6">
+    <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-lg">
+        <h1 class="text-2xl font-bold mb-2 text-gray-800">Preencher Documento</h1>
+        <p class="text-gray-600 mb-6">Preencha os campos abaixo para gerar o arquivo: <strong>{{ pdf_name }}.pdf</strong></p>
+
+        <form action="{{ url_for('generate_pdf', pdf_name=pdf_name) }}" method="post" class="space-y-4">
+            {% for field in fields %}
+                <div>
+                    <label for="{{ field.name }}" class="block text-sm font-medium text-gray-700 capitalize">{{ field.name.replace('_', ' ') }}</label>
+                    
+                    {% if field.type == 'assinatura' %}
+                        <p class="text-xs text-gray-500">Digite seu nome completo como assinatura.</p>
+                    {% elif field.type == 'visto' %}
+                        <p class="text-xs text-gray-500">Digite suas iniciais para o visto.</p>
+                    {% endif %}
+
+                    <input type="text" id="{{ field.name }}" name="{{ field.name }}" required
+                           class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                </div>
+            {% endfor %}
+            
+            <div class="pt-4">
+                <button type="submit"
+                        class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
+                    Gerar PDF Preenchido
+                </button>
+            </div>
+        </form>
+    </div>
+</body>
+</html>
